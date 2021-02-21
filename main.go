@@ -4,8 +4,14 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"strings"
 
+	cne "github.com/muzudho/gtp-engine-to-nngs/entities" // CoNnector
+	cnui "github.com/muzudho/gtp-engine-to-nngs/ui"
+	kwe "github.com/muzudho/kifuwarabe-gtp/entities"
+	kwui "github.com/muzudho/kifuwarabe-gtp/ui"
 	kwu "github.com/muzudho/kifuwarabe-gtp/usecases"
 )
 
@@ -52,4 +58,28 @@ func main() {
 	// チャッターの作成。 標準出力とロガーを一緒にしただけです。
 	kwu.G.Chat = *kwu.NewChatter(kwu.G.Log)
 	kwu.G.StderrChat = *kwu.NewStderrChatter(kwu.G.Log)
+
+	// fmt.Println("...GE2NNGS... 設定ファイルを読み込んだろ☆（＾～＾）")
+	engineConfW := kwui.LoadEngineConf(engineConfPathW)
+	entryConfW := cnui.LoadEntryConf(entryConfPathW)
+	engineConfB := kwui.LoadEngineConf(engineConfPathB)
+	entryConfB := cnui.LoadEntryConf(entryConfPathB)
+
+	// 思考エンジンを起動
+	go startEngine(engineConfW, entryConfW, workdirw)
+	startEngine(engineConfB, entryConfB, workdirb)
+
+	kwu.G.Chat.Trace("(^q^) コロシアムを終了するぜ")
+}
+
+// コネクターを起動
+func startEngine(engineConf kwe.EngineConf, entryConf cne.EntryConf, workdir *string) {
+	parameters := strings.Split("--workdir "+*workdir+" "+entryConf.User.EngineCommandOption, " ")
+	kwu.G.Chat.Trace("(^q^) GTP対応の思考エンジンを起動するぜ☆ [%s] [%s]", entryConf.User.EngineCommand, strings.Join(parameters, " "))
+	cmd := exec.Command(entryConf.User.EngineCommand, parameters...)
+	err := cmd.Start()
+	if err != nil {
+		panic(kwu.G.Chat.Fatal(err.Error()))
+	}
+	// cmd.Wait()
 }

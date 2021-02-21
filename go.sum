@@ -1,5 +1,10 @@
+github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
+github.com/muzudho/gtp-engine-to-nngs v0.0.0-20210221123747-c8da0b660a01 h1:ypdUngWOJnFfAY/hyGgogVzWBGgbzuAYr7g8+wny6gY=
+github.com/muzudho/gtp-engine-to-nngs v0.0.0-20210221123747-c8da0b660a01/go.mod h1:YQp+kUF5a873gvbf8zQhcKYGF13WuA2yf4RFHBAYauI=
 github.com/muzudho/kifuwarabe-gtp v0.0.0-20210221102948-03134c2c1ce0 h1:NsZOfhqpBwWW5SmWfr6GWDHVj+nQY3cA7IQKWA+2b6E=
 github.com/muzudho/kifuwarabe-gtp v0.0.0-20210221102948-03134c2c1ce0/go.mod h1:7siUfeJLBGzetOlMk0jnFvqEqgoZfZTnbuiYnb2mLxg=
 github.com/pelletier/go-toml v1.8.1 h1:1Nf83orprkJyknT6h7zbuEGUEjcyVlCxSUGTENmNCRM=
 github.com/pelletier/go-toml v1.8.1/go.mod h1:T2/BmBdy8dvIRq1a/8aqjN41wvWlN4lrapLU/GW4pbc=
+github.com/reiver/go-oi v1.0.0/go.mod h1:RrDBct90BAhoDTxB1fenZwfykqeGvhI6LsNfStJoEkI=
+github.com/reiver/go-telnet v0.0.0-20180421082511-9ff0b2ab096e/go.mod h1:+5vNVvEWwEIx86DB9Ke/+a5wBI464eDRo3eF0LcfpWg=
