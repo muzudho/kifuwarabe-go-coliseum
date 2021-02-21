@@ -56,7 +56,11 @@ func main() {
 
 	// 既存のログ・ファイルを削除
 	u.G.Log.RemoveAllOldLogs()
+
+	// ログ・ファイルの開閉
 	u.G.Log.OpenAllLogs()
+	defer u.G.Log.CloseAllLogs()
+
 	u.G.Log.Trace("...Coliseum Remove all old logs\n")
 
 	// チャッターの作成。 標準出力とロガーを一緒にしただけです。
@@ -85,12 +89,10 @@ func main() {
 	}
 
 	// 思考エンジンを起動
-	go startEngine(engineConfW, entryConfW, workdirw)
+	startEngine(engineConfW, entryConfW, workdirw)
 	startEngine(engineConfB, entryConfB, workdirb)
 
-	u.G.Chat.Trace("(^q^) コロシアムを終了するぜ")
-	u.G.Log.Trace("...Coliseum... End\n")
-	u.G.Log.CloseAllLogs()
+	u.G.Chat.Trace("...Coliseum... End\n")
 }
 
 // コネクターを起動
