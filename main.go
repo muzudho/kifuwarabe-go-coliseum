@@ -34,13 +34,13 @@ func main() {
 	fmt.Printf("...Coliseum... workdir=%s\n", *workdir)
 	fmt.Printf("...Coliseum... workdirw=%s\n", *workdirw)
 	fmt.Printf("...Coliseum... workdirb=%s\n", *workdirb)
-	entryConfPathW := filepath.Join(*workdirw, "input/entry.conf.toml")
+	connectorConfPathW := filepath.Join(*workdirw, "input/connector.conf.toml")
 	engineConfPathW := filepath.Join(*workdirw, "input/engine.conf.toml")
-	entryConfPathB := filepath.Join(*workdirb, "input/entry.conf.toml")
+	connectorConfPathB := filepath.Join(*workdirb, "input/connector.conf.toml")
 	engineConfPathB := filepath.Join(*workdirb, "input/engine.conf.toml")
-	fmt.Printf("...Coliseum... entryConfPathW=%s\n", entryConfPathW)
+	fmt.Printf("...Coliseum... connectorConfPathW=%s\n", connectorConfPathW)
 	fmt.Printf("...Coliseum... engineConfPathW=%s\n", engineConfPathW)
-	fmt.Printf("...Coliseum... entryConfPathB=%s\n", entryConfPathB)
+	fmt.Printf("...Coliseum... connectorConfPathB=%s\n", connectorConfPathB)
 	fmt.Printf("...Coliseum... engineConfPathB=%s\n", engineConfPathB)
 
 	// ロガーの作成。
@@ -73,9 +73,9 @@ func main() {
 		panic(u.G.Chat.Fatal("engineConfPathW=[%s] err=[%s]", engineConfPathW, err))
 	}
 
-	entryConfW, err := cnui.LoadEntryConf(entryConfPathW)
+	connectorConfW, err := cnui.LoadConnectorConf(connectorConfPathW)
 	if err != nil {
-		panic(u.G.Chat.Fatal("entryConfPathW=[%s] err=[%s]", entryConfPathW, err))
+		panic(u.G.Chat.Fatal("connectorConfPathW=[%s] err=[%s]", connectorConfPathW, err))
 	}
 
 	engineConfB, err := kwui.LoadEngineConf(engineConfPathB)
@@ -83,23 +83,24 @@ func main() {
 		panic(u.G.Chat.Fatal("engineConfPathB=[%s] err=[%s]", engineConfPathB, err))
 	}
 
-	entryConfB, err := cnui.LoadEntryConf(entryConfPathB)
+	connectorConfB, err := cnui.LoadConnectorConf(connectorConfPathB)
 	if err != nil {
-		panic(u.G.Chat.Fatal("entryConfPathB=[%s] err=[%s]", entryConfPathB, err))
+		panic(u.G.Chat.Fatal("connectorConfPathB=[%s] err=[%s]", connectorConfPathB, err))
 	}
 
 	// 思考エンジンを起動
-	startEngine(engineConfW, entryConfW, workdirw)
-	startEngine(engineConfB, entryConfB, workdirb)
+	startEngine(engineConfW, connectorConfW, workdirw)
+	startEngine(engineConfB, connectorConfB, workdirb)
 
 	u.G.Chat.Trace("...Coliseum... End\n")
 }
 
 // コネクターを起動
-func startEngine(engineConf *kwe.EngineConf, entryConf *cne.EntryConf, workdir *string) {
-	parameters := strings.Split("--workdir "+*workdir+" "+entryConf.User.EngineCommandOption, " ")
-	u.G.Chat.Trace("(^q^) GTP対応の思考エンジンを起動するぜ☆ [%s] [%s]", entryConf.User.EngineCommand, strings.Join(parameters, " "))
-	cmd := exec.Command(entryConf.User.EngineCommand, parameters...)
+func startEngine(engineConf *kwe.EngineConf, connectorConf *cne.ConnectorConf, workdir *string) {
+	parameters := strings.Split("--workdir "+*workdir+" "+connectorConf.User.EngineCommandOption, " ")
+	u.G.Chat.Trace("(^q^) GTP対応の思考エンジンを起動するぜ☆\n")
+	u.G.Chat.Trace("(^q^) EngineCommand=[%s] ArgumentList=[%s]\n", connectorConf.User.EngineCommand, strings.Join(parameters, " "))
+	cmd := exec.Command(connectorConf.User.EngineCommand, parameters...)
 	err := cmd.Start()
 	if err != nil {
 		panic(u.G.Chat.Fatal(err.Error()))
