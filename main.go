@@ -64,8 +64,10 @@ func main() {
 	u.G.Log.Trace("...Coliseum Remove all old logs\n")
 
 	// チャッターの作成。 標準出力とロガーを一緒にしただけです。
-	u.G.Chat = *kwu.NewChatter(kwu.G.Log)
-	u.G.StderrChat = *kwu.NewStderrChatter(kwu.G.Log)
+	// u.G.Chat = *kwu.NewChatter(kwu.G.Log)
+	// u.G.StderrChat = *kwu.NewStderrChatter(kwu.G.Log)
+	u.G.Chat = *kwu.NewChatter(u.G.Log)
+	u.G.StderrChat = *kwu.NewStderrChatter(u.G.Log)
 
 	// fmt.Println("...GE2NNGS... 設定ファイルを読み込んだろ☆（＾～＾）")
 	engineConfW, err := kwui.LoadEngineConf(engineConfPathW)
@@ -89,21 +91,23 @@ func main() {
 	}
 
 	// 思考エンジンを起動
-	startEngine(engineConfW, connectorConfW, workdirw)
-	startEngine(engineConfB, connectorConfB, workdirb)
+	u.G.Chat.Trace("(^q^) GTP対応の思考エンジンを起動するぜ☆\n")
+	cmdW := startEngine(engineConfW, connectorConfW, workdirw)
+	cmdB := startEngine(engineConfB, connectorConfB, workdirb)
+	cmdW.Wait()
+	cmdB.Wait()
 
 	u.G.Chat.Trace("...Coliseum... End\n")
 }
 
 // コネクターを起動
-func startEngine(engineConf *kwe.EngineConf, connectorConf *cne.ConnectorConf, workdir *string) {
+func startEngine(engineConf *kwe.EngineConf, connectorConf *cne.ConnectorConf, workdir *string) *exec.Cmd {
 	parameters := strings.Split("--workdir "+*workdir+" "+connectorConf.User.EngineCommandOption, " ")
-	u.G.Chat.Trace("(^q^) GTP対応の思考エンジンを起動するぜ☆\n")
 	u.G.Chat.Trace("(^q^) EngineCommand=[%s] ArgumentList=[%s]\n", connectorConf.User.EngineCommand, strings.Join(parameters, " "))
 	cmd := exec.Command(connectorConf.User.EngineCommand, parameters...)
 	err := cmd.Start()
 	if err != nil {
 		panic(u.G.Chat.Fatal(err.Error()))
 	}
-	// cmd.Wait()
+	return cmd
 }
