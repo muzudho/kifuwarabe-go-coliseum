@@ -7,107 +7,120 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 
 	cne "github.com/muzudho/gtp-engine-to-nngs/entities" // CoNnector
 	cnui "github.com/muzudho/gtp-engine-to-nngs/ui"
-	u "github.com/muzudho/kifuwarabe-go-coliseum/usecases"
+	g "github.com/muzudho/kifuwarabe-go-coliseum/global"
 	kwe "github.com/muzudho/kifuwarabe-gtp/entities"
 	kwui "github.com/muzudho/kifuwarabe-gtp/ui"
 	kwu "github.com/muzudho/kifuwarabe-gtp/usecases"
 )
 
 func main() {
-	// Working directory
-	wdir, err := os.Getwd()
+	// Default working directory
+	dwd, err := os.Getwd()
 	if err != nil {
 		// ここでは、ログはまだ設定できてない
-		panic(fmt.Sprintf("...Coliseum... wdir=%s", wdir))
+		panic(fmt.Errorf("...Coliseum... err=%s", err))
 	}
-	fmt.Printf("...Coliseum... wdir=%s\n", wdir)
+	fmt.Printf("...Coliseum... DefaultWorkingDirectory=%s\n", dwd)
 
 	// コマンドライン引数
-	workdir := flag.String("workdir", wdir, "Working directory path.")
-	workdirw := flag.String("workdirw", wdir, "Working directory path of White phase.")
-	workdirb := flag.String("workdirb", wdir, "Working directory path of Black phase.")
+	wd := flag.String("workdir", dwd, "Working directory path.")
+	wdw := flag.String("workdirw", dwd, "Working directory path of White phase.")
+	wdb := flag.String("workdirb", dwd, "Working directory path of Black phase.")
 	flag.Parse()
 	fmt.Printf("...Coliseum... flag.Args()=%s\n", flag.Args())
-	fmt.Printf("...Coliseum... workdir=%s\n", *workdir)
-	fmt.Printf("...Coliseum... workdirw=%s\n", *workdirw)
-	fmt.Printf("...Coliseum... workdirb=%s\n", *workdirb)
-	connectorConfPathW := filepath.Join(*workdirw, "input/connector.conf.toml")
-	engineConfPathW := filepath.Join(*workdirw, "input/engine.conf.toml")
-	connectorConfPathB := filepath.Join(*workdirb, "input/connector.conf.toml")
-	engineConfPathB := filepath.Join(*workdirb, "input/engine.conf.toml")
+	fmt.Printf("...Coliseum... WorkingDirectory=%s\n", *wd)
+	fmt.Printf("...Coliseum... WorkingDirectoryW=%s\n", *wdw)
+	fmt.Printf("...Coliseum... WorkingDirectoryB=%s\n", *wdb)
+	connectorConfPathW := filepath.Join(*wdw, "input/connector.conf.toml")
+	engineConfPathW := filepath.Join(*wdw, "input/engine.conf.toml")
+	connectorConfPathB := filepath.Join(*wdb, "input/connector.conf.toml")
+	engineConfPathB := filepath.Join(*wdb, "input/engine.conf.toml")
 	fmt.Printf("...Coliseum... connectorConfPathW=%s\n", connectorConfPathW)
 	fmt.Printf("...Coliseum... engineConfPathW=%s\n", engineConfPathW)
 	fmt.Printf("...Coliseum... connectorConfPathB=%s\n", connectorConfPathB)
 	fmt.Printf("...Coliseum... engineConfPathB=%s\n", engineConfPathB)
 
 	// ロガーの作成。
-	u.G.Log = *kwu.NewLogger(
-		filepath.Join(*workdir, "output/trace.log"),
-		filepath.Join(*workdir, "output/debug.log"),
-		filepath.Join(*workdir, "output/info.log"),
-		filepath.Join(*workdir, "output/notice.log"),
-		filepath.Join(*workdir, "output/warn.log"),
-		filepath.Join(*workdir, "output/error.log"),
-		filepath.Join(*workdir, "output/fatal.log"),
-		filepath.Join(*workdir, "output/print.log"))
+	g.G.Log = *kwu.NewLogger(
+		filepath.Join(*wd, "output/trace.log"),
+		filepath.Join(*wd, "output/debug.log"),
+		filepath.Join(*wd, "output/info.log"),
+		filepath.Join(*wd, "output/notice.log"),
+		filepath.Join(*wd, "output/warn.log"),
+		filepath.Join(*wd, "output/error.log"),
+		filepath.Join(*wd, "output/fatal.log"),
+		filepath.Join(*wd, "output/print.log"))
 
 	// 既存のログ・ファイルを削除
-	u.G.Log.RemoveAllOldLogs()
+	g.G.Log.RemoveAllOldLogs()
 
 	// ログ・ファイルの開閉
-	u.G.Log.OpenAllLogs()
-	defer u.G.Log.CloseAllLogs()
+	err = g.G.Log.OpenAllLogs()
+	if err != nil {
+		// ログ・ファイルを開くのに失敗したのだから、ログ・ファイルへは書き込めません
+		panic(fmt.Sprintf("...Coliseum... %s", err))
+	}
+	defer g.G.Log.CloseAllLogs()
 
-	u.G.Log.Trace("...Coliseum Remove all old logs\n")
+	g.G.Log.Trace("...Coliseum Remove all old logs\n")
 
 	// チャッターの作成。 標準出力とロガーを一緒にしただけです。
-	// u.G.Chat = *kwu.NewChatter(kwu.G.Log)
-	// u.G.StderrChat = *kwu.NewStderrChatter(kwu.G.Log)
-	u.G.Chat = *kwu.NewChatter(u.G.Log)
-	u.G.StderrChat = *kwu.NewStderrChatter(u.G.Log)
+	g.G.Chat = *kwu.NewChatter(g.G.Log)
+	g.G.StderrChat = *kwu.NewStderrChatter(g.G.Log)
 
-	// fmt.Println("...GE2NNGS... 設定ファイルを読み込んだろ☆（＾～＾）")
+	g.G.Chat.Trace("...Coliseum... Start\n")
+
+	// 設定ファイル読込
 	engineConfW, err := kwui.LoadEngineConf(engineConfPathW)
 	if err != nil {
-		panic(u.G.Chat.Fatal("engineConfPathW=[%s] err=[%s]", engineConfPathW, err))
+		panic(g.G.Chat.Fatal("...Coliseum... engineConfPathW=[%s] err=[%s]", engineConfPathW, err))
 	}
 
 	connectorConfW, err := cnui.LoadConnectorConf(connectorConfPathW)
 	if err != nil {
-		panic(u.G.Chat.Fatal("connectorConfPathW=[%s] err=[%s]", connectorConfPathW, err))
+		panic(g.G.Chat.Fatal("...Coliseum... connectorConfPathW=[%s] err=[%s]", connectorConfPathW, err))
 	}
 
 	engineConfB, err := kwui.LoadEngineConf(engineConfPathB)
 	if err != nil {
-		panic(u.G.Chat.Fatal("engineConfPathB=[%s] err=[%s]", engineConfPathB, err))
+		panic(g.G.Chat.Fatal("...Coliseum... engineConfPathB=[%s] err=[%s]", engineConfPathB, err))
 	}
 
 	connectorConfB, err := cnui.LoadConnectorConf(connectorConfPathB)
 	if err != nil {
-		panic(u.G.Chat.Fatal("connectorConfPathB=[%s] err=[%s]", connectorConfPathB, err))
+		panic(g.G.Chat.Fatal("...Coliseum... connectorConfPathB=[%s] err=[%s]", connectorConfPathB, err))
 	}
 
 	// 思考エンジンを起動
-	u.G.Chat.Trace("(^q^) GTP対応の思考エンジンを起動するぜ☆\n")
-	cmdW := startEngine(engineConfW, connectorConfW, workdirw)
-	cmdB := startEngine(engineConfB, connectorConfB, workdirb)
+	g.G.Chat.Trace("...Coliseum... Start cmdW\n")
+	startEngine(engineConfW, connectorConfW, wdw)
+	cmdW := startEngine(engineConfW, connectorConfW, wdw)
+	g.G.Chat.Trace("...Coliseum... Sleep 4 seconds\n")
+	time.Sleep(time.Second * 4)
+	g.G.Chat.Trace("...Coliseum... Start cmdB\n")
+	cmdB := startEngine(engineConfB, connectorConfB, wdb)
+	g.G.Chat.Trace("...Coliseum... Wait cmdW\n")
 	cmdW.Wait()
+	g.G.Chat.Trace("...Coliseum... Wait cmdB\n")
 	cmdB.Wait()
 
-	u.G.Chat.Trace("...Coliseum... End\n")
+	g.G.Chat.Trace("...Coliseum... End\n")
 }
 
 // コネクターを起動
 func startEngine(engineConf *kwe.EngineConf, connectorConf *cne.ConnectorConf, workdir *string) *exec.Cmd {
 	parameters := strings.Split("--workdir "+*workdir+" "+connectorConf.User.EngineCommandOption, " ")
-	u.G.Chat.Trace("(^q^) EngineCommand=[%s] ArgumentList=[%s]\n", connectorConf.User.EngineCommand, strings.Join(parameters, " "))
+	parametersString := strings.Join(parameters, " ")
+	parametersString = strings.TrimRight(parametersString, " ")
+	g.G.Chat.Trace("...Coliseum... (^q^) EngineCommand=[%s] ArgumentList=[%s]\n", connectorConf.User.EngineCommand, parametersString)
 	cmd := exec.Command(connectorConf.User.EngineCommand, parameters...)
 	err := cmd.Start()
 	if err != nil {
-		panic(u.G.Chat.Fatal(err.Error()))
+		panic(g.G.Chat.Fatal(fmt.Sprintf("...Coliseum... cmd.Run() --> [%s]", err)))
 	}
 	return cmd
 }
