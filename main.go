@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
 	cne "github.com/muzudho/gtp-engine-to-nngs/entities" // CoNnector
@@ -96,23 +97,24 @@ func main() {
 	}
 
 	// 思考エンジンを起動
+	wg := sync.WaitGroup{}
+	wg.Add(2)
 	g.G.Chat.Trace("...Coliseum... Start cmdW\n")
-	startEngine(engineConfW, connectorConfW, wdw)
-	cmdW := startEngine(engineConfW, connectorConfW, wdw)
+	go startEngine(engineConfW, connectorConfW, wdw, &wg)
 	g.G.Chat.Trace("...Coliseum... Sleep 4 seconds\n")
 	time.Sleep(time.Second * 4)
 	g.G.Chat.Trace("...Coliseum... Start cmdB\n")
-	cmdB := startEngine(engineConfB, connectorConfB, wdb)
-	g.G.Chat.Trace("...Coliseum... Wait cmdW\n")
-	cmdW.Wait()
-	g.G.Chat.Trace("...Coliseum... Wait cmdB\n")
-	cmdB.Wait()
+	go startEngine(engineConfB, connectorConfB, wdb, &wg)
+	g.G.Chat.Trace("...Coliseum... WaitGropu wait\n")
+	wg.Wait()
 
 	g.G.Chat.Trace("...Coliseum... End\n")
 }
 
 // コネクターを起動
-func startEngine(engineConf *kwe.EngineConf, connectorConf *cne.ConnectorConf, workdir *string) *exec.Cmd {
+func startEngine(engineConf *kwe.EngineConf, connectorConf *cne.ConnectorConf, workdir *string, wg *sync.WaitGroup) {
+	defer wg.Done()
+
 	parameters := strings.Split("--workdir "+*workdir+" "+connectorConf.User.EngineCommandOption, " ")
 	parametersString := strings.Join(parameters, " ")
 	parametersString = strings.TrimRight(parametersString, " ")
@@ -122,5 +124,8 @@ func startEngine(engineConf *kwe.EngineConf, connectorConf *cne.ConnectorConf, w
 	if err != nil {
 		panic(g.G.Chat.Fatal(fmt.Sprintf("...Coliseum... cmd.Run() --> [%s]", err)))
 	}
-	return cmd
+
+	g.G.Chat.Trace("...Coliseum... Cmd Wait\n")
+	cmd.Wait()
+	g.G.Chat.Trace("...Coliseum... Cmd Waited\n")
 }
