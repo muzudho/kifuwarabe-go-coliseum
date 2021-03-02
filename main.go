@@ -13,6 +13,7 @@ import (
 	cne "github.com/muzudho/gtp-engine-to-nngs/entities" // CoNnector
 	cnui "github.com/muzudho/gtp-engine-to-nngs/ui"
 	g "github.com/muzudho/kifuwarabe-go-coliseum/global"
+	"github.com/muzudho/kifuwarabe-go-coliseum/ui"
 	kwe "github.com/muzudho/kifuwarabe-gtp/entities"
 	kwui "github.com/muzudho/kifuwarabe-gtp/ui"
 	kwu "github.com/muzudho/kifuwarabe-gtp/usecases"
@@ -36,6 +37,7 @@ func main() {
 	fmt.Printf("...Coliseum... WorkingDirectory=%s\n", *wd)
 	fmt.Printf("...Coliseum... WorkingDirectoryW=%s\n", *wdw)
 	fmt.Printf("...Coliseum... WorkingDirectoryB=%s\n", *wdb)
+	coliseumConfPath := filepath.Join(*wdw, "input/coliseum.conf.toml")
 	connectorConfPathW := filepath.Join(*wdw, "input/connector.conf.toml")
 	engineConfPathW := filepath.Join(*wdw, "input/engine.conf.toml")
 	connectorConfPathB := filepath.Join(*wdb, "input/connector.conf.toml")
@@ -76,6 +78,13 @@ func main() {
 	g.G.Chat.Trace("...Coliseum... Start\n")
 
 	// 設定ファイル読込
+	// coliseumConfig, err := ui.LoadColiseumConf(coliseumConfPath)
+	_, err = ui.LoadColiseumConf(coliseumConfPath)
+	if err != nil {
+		panic(g.G.Log.Fatal(fmt.Sprintf("...Engine... coliseumConfPath=[%s] err=[%s]", coliseumConfPath, err)))
+	}
+
+	// 設定ファイル読込
 	engineConfW, err := kwui.LoadEngineConf(engineConfPathW)
 	if err != nil {
 		panic(g.G.Chat.Fatal("...Coliseum... engineConfPathW=[%s] err=[%s]", engineConfPathW, err))
@@ -100,11 +109,11 @@ func main() {
 	wg := sync.WaitGroup{}
 	wg.Add(2)
 	g.G.Chat.Trace("...Coliseum... Start cmdW\n")
-	go startEngine(engineConfW, connectorConfW, wdw, &wg)
+	go startEngine(engineConfW, connectorConfW, &wg)
 	g.G.Chat.Trace("...Coliseum... Sleep 4 seconds\n")
 	time.Sleep(time.Second * 4)
 	g.G.Chat.Trace("...Coliseum... Start cmdB\n")
-	go startEngine(engineConfB, connectorConfB, wdb, &wg)
+	go startEngine(engineConfB, connectorConfB, &wg)
 	g.G.Chat.Trace("...Coliseum... WaitGropu wait\n")
 	wg.Wait()
 
@@ -112,10 +121,10 @@ func main() {
 }
 
 // コネクターを起動
-func startEngine(engineConf *kwe.EngineConf, connectorConf *cne.ConnectorConf, workdir *string, wg *sync.WaitGroup) {
+func startEngine(engineConf *kwe.EngineConf, connectorConf *cne.ConnectorConf, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	parameters := strings.Split("--workdir "+*workdir+" "+connectorConf.User.EngineCommandOption, " ")
+	parameters := strings.Split(connectorConf.User.EngineCommandOption, " ")
 	parametersString := strings.Join(parameters, " ")
 	parametersString = strings.TrimRight(parametersString, " ")
 	g.G.Chat.Trace("...Coliseum... (^q^) EngineCommand=[%s] ArgumentList=[%s]\n", connectorConf.User.EngineCommand, parametersString)
