@@ -3,12 +3,12 @@ package ui
 import (
 	"io/ioutil"
 
-	e "github.com/muzudho/kifuwarabe-gtp/entities"
+	e "github.com/muzudho/kifuwarabe-go-coliseum/entities"
 	"github.com/pelletier/go-toml"
 )
 
 // LoadColiseumConf - ゲーム設定ファイルを読み込みます。
-func LoadColiseumConf(path string) (*e.EngineConf, error) {
+func LoadColiseumConf(path string) (*e.ColiseumConf, error) {
 
 	// ファイル読込
 	fileData, err := ioutil.ReadFile(path)
@@ -18,7 +18,7 @@ func LoadColiseumConf(path string) (*e.EngineConf, error) {
 
 	// Toml解析
 	binary := []byte(string(fileData))
-	config := &e.EngineConf{}
+	config := &e.ColiseumConf{}
 	toml.Unmarshal(binary, config)
 
 	return config, nil

@@ -28,24 +28,15 @@ func main() {
 	}
 	fmt.Printf("...Coliseum... DefaultWorkingDirectory=%s\n", dwd)
 
-	// コマンドライン引数
+	// コマンドライン引数登録
 	wd := flag.String("workdir", dwd, "Working directory path.")
-	wdw := flag.String("workdirw", dwd, "Working directory path of White phase.")
-	wdb := flag.String("workdirb", dwd, "Working directory path of Black phase.")
+	// 解析
 	flag.Parse()
+
 	fmt.Printf("...Coliseum... flag.Args()=%s\n", flag.Args())
 	fmt.Printf("...Coliseum... WorkingDirectory=%s\n", *wd)
-	fmt.Printf("...Coliseum... WorkingDirectoryW=%s\n", *wdw)
-	fmt.Printf("...Coliseum... WorkingDirectoryB=%s\n", *wdb)
-	coliseumConfPath := filepath.Join(*wdw, "input/coliseum.conf.toml")
-	connectorConfPathW := filepath.Join(*wdw, "input/connector.conf.toml")
-	engineConfPathW := filepath.Join(*wdw, "input/engine.conf.toml")
-	connectorConfPathB := filepath.Join(*wdb, "input/connector.conf.toml")
-	engineConfPathB := filepath.Join(*wdb, "input/engine.conf.toml")
-	fmt.Printf("...Coliseum... connectorConfPathW=%s\n", connectorConfPathW)
-	fmt.Printf("...Coliseum... engineConfPathW=%s\n", engineConfPathW)
-	fmt.Printf("...Coliseum... connectorConfPathB=%s\n", connectorConfPathB)
-	fmt.Printf("...Coliseum... engineConfPathB=%s\n", engineConfPathB)
+	coliseumConfPath := filepath.Join(*wd, "input/coliseum.conf.toml")
+	fmt.Printf("...Coliseum... coliseumConfPath=%s\n", coliseumConfPath)
 
 	// ロガーの作成。
 	g.G.Log = *kwu.NewLogger(
@@ -78,11 +69,22 @@ func main() {
 	g.G.Chat.Trace("...Coliseum... Start\n")
 
 	// 設定ファイル読込
-	// coliseumConfig, err := ui.LoadColiseumConf(coliseumConfPath)
-	_, err = ui.LoadColiseumConf(coliseumConfPath)
+	coliseumConfig, err := ui.LoadColiseumConf(coliseumConfPath)
 	if err != nil {
 		panic(g.G.Log.Fatal(fmt.Sprintf("...Engine... coliseumConfPath=[%s] err=[%s]", coliseumConfPath, err)))
 	}
+	wdw := coliseumConfig.Coliseum.WhiteWorkspace
+	wdb := coliseumConfig.Coliseum.BlackWorkspace
+	fmt.Printf("...Coliseum... WorkingDirectoryW=%s\n", wdw)
+	fmt.Printf("...Coliseum... WorkingDirectoryB=%s\n", wdb)
+	connectorConfPathW := filepath.Join(wdw, "input/connector.conf.toml")
+	engineConfPathW := filepath.Join(wdw, "input/engine.conf.toml")
+	connectorConfPathB := filepath.Join(wdb, "input/connector.conf.toml")
+	engineConfPathB := filepath.Join(wdb, "input/engine.conf.toml")
+	fmt.Printf("...Coliseum... connectorConfPathW=%s\n", connectorConfPathW)
+	fmt.Printf("...Coliseum... engineConfPathW=%s\n", engineConfPathW)
+	fmt.Printf("...Coliseum... connectorConfPathB=%s\n", connectorConfPathB)
+	fmt.Printf("...Coliseum... engineConfPathB=%s\n", engineConfPathB)
 
 	// 設定ファイル読込
 	engineConfW, err := kwui.LoadEngineConf(engineConfPathW)
