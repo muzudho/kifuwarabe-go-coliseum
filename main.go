@@ -11,7 +11,7 @@ import (
 	"time"
 
 	// CoNnector
-	cnui "github.com/muzudho/gtp-engine-to-nngs/ui"
+
 	"github.com/muzudho/kifuwarabe-go-coliseum/entities"
 	g "github.com/muzudho/kifuwarabe-go-coliseum/global"
 	"github.com/muzudho/kifuwarabe-go-coliseum/ui"
@@ -106,19 +106,13 @@ func main() {
 func startConnector(colorConf entities.Color, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	// コネクター設定ファイル読込
-	connectorConfPath := filepath.Join(colorConf.Workspace, "input/connector.conf.toml")
-	connectorConf, err := cnui.LoadConnectorConf(connectorConfPath)
-	if err != nil {
-		panic(g.G.Chat.Fatal("...Coliseum... connectorConfPath=[%s] err=[%s]", connectorConfPath, err))
-	}
-
-	parameters := strings.Split(connectorConf.User.EngineCommandOption, " ")
+	p1 := fmt.Sprintf("--workdir %s", colorConf.Workspace)
+	parameters := []string{p1}
 	parametersString := strings.Join(parameters, " ")
-	parametersString = strings.TrimRight(parametersString, " ")
-	g.G.Chat.Trace("...Coliseum... (^q^) EngineCommand=[%s] ArgumentList=[%s]\n", connectorConf.User.EngineCommand, parametersString)
-	cmd := exec.Command(connectorConf.User.EngineCommand, parameters...)
-	err = cmd.Start()
+	g.G.Chat.Trace("...Coliseum... (^q^) Exe=[%s] ArgumentList=[%s]\n", colorConf.Connector, parametersString)
+
+	cmd := exec.Command(colorConf.Connector, parameters...)
+	err := cmd.Start()
 	if err != nil {
 		panic(g.G.Chat.Fatal(fmt.Sprintf("...Coliseum... cmd.Run() --> [%s]", err)))
 	}
