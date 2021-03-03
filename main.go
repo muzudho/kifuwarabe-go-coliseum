@@ -104,12 +104,13 @@ func main() {
 func startConnector(colorConf entities.Color, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	p1 := fmt.Sprintf("--workdir %s", colorConf.Workspace)
-	parameters := []string{p1}
-	parametersString := strings.Join(parameters, " ")
-	g.G.Chat.Trace("...Coliseum... (^q^) Exe=[%s] ArgumentList=[%s]\n", colorConf.Connector, parametersString)
+	s1 := fmt.Sprintf("--workdir %s", colorConf.Workspace)
+	s2 := strings.Split(s1, " ")
+	s3 := strings.Join(s2, " ")
+	g.G.Chat.Trace("...Coliseum... (^q^) Exe=[%s] Parameters=[%s]\n", colorConf.Connector, s3)
 
-	cmd := exec.Command(colorConf.Connector, parameters...)
+	// 第二引数は、パラメーター毎に分割するのではなく、愚直に半角空白でスプリットしてください
+	cmd := exec.Command(colorConf.Connector, s2...)
 	err := cmd.Start()
 	if err != nil {
 		panic(g.G.Chat.Fatal(fmt.Sprintf("...Coliseum... cmd.Run() --> [%s]", err)))
