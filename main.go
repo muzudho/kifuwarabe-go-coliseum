@@ -10,12 +10,10 @@ import (
 	"sync"
 	"time"
 
-	cne "github.com/muzudho/gtp-engine-to-nngs/entities" // CoNnector
+	// CoNnector
 	cnui "github.com/muzudho/gtp-engine-to-nngs/ui"
 	g "github.com/muzudho/kifuwarabe-go-coliseum/global"
 	"github.com/muzudho/kifuwarabe-go-coliseum/ui"
-	kwe "github.com/muzudho/kifuwarabe-gtp/entities"
-	kwui "github.com/muzudho/kifuwarabe-gtp/ui"
 	kwu "github.com/muzudho/kifuwarabe-gtp/usecases"
 )
 
@@ -86,36 +84,15 @@ func main() {
 	fmt.Printf("...Coliseum... connectorConfPathB=%s\n", connectorConfPathB)
 	fmt.Printf("...Coliseum... engineConfPathB=%s\n", engineConfPathB)
 
-	// 設定ファイル読込
-	engineConfW, err := kwui.LoadEngineConf(engineConfPathW)
-	if err != nil {
-		panic(g.G.Chat.Fatal("...Coliseum... engineConfPathW=[%s] err=[%s]", engineConfPathW, err))
-	}
-
-	connectorConfW, err := cnui.LoadConnectorConf(connectorConfPathW)
-	if err != nil {
-		panic(g.G.Chat.Fatal("...Coliseum... connectorConfPathW=[%s] err=[%s]", connectorConfPathW, err))
-	}
-
-	engineConfB, err := kwui.LoadEngineConf(engineConfPathB)
-	if err != nil {
-		panic(g.G.Chat.Fatal("...Coliseum... engineConfPathB=[%s] err=[%s]", engineConfPathB, err))
-	}
-
-	connectorConfB, err := cnui.LoadConnectorConf(connectorConfPathB)
-	if err != nil {
-		panic(g.G.Chat.Fatal("...Coliseum... connectorConfPathB=[%s] err=[%s]", connectorConfPathB, err))
-	}
-
-	// 思考エンジンを起動
+	// コネクターを起動
 	wg := sync.WaitGroup{}
 	wg.Add(2)
 	g.G.Chat.Trace("...Coliseum... Start cmdW\n")
-	go startEngine(engineConfW, connectorConfW, &wg)
+	go startConnector(coliseumConfig.Coliseum.WhiteWorkspace, &wg)
 	g.G.Chat.Trace("...Coliseum... Sleep 4 seconds\n")
 	time.Sleep(time.Second * 4)
 	g.G.Chat.Trace("...Coliseum... Start cmdB\n")
-	go startEngine(engineConfB, connectorConfB, &wg)
+	go startConnector(coliseumConfig.Coliseum.BlackWorkspace, &wg)
 	g.G.Chat.Trace("...Coliseum... WaitGropu wait\n")
 	wg.Wait()
 
@@ -123,15 +100,22 @@ func main() {
 }
 
 // コネクターを起動
-func startEngine(engineConf *kwe.EngineConf, connectorConf *cne.ConnectorConf, wg *sync.WaitGroup) {
+func startConnector(coliseumWorkspace string, wg *sync.WaitGroup) {
 	defer wg.Done()
+
+	// コネクター設定ファイル読込
+	connectorConfPath := filepath.Join(coliseumWorkspace, "input/connector.conf.toml")
+	connectorConf, err := cnui.LoadConnectorConf(connectorConfPath)
+	if err != nil {
+		panic(g.G.Chat.Fatal("...Coliseum... connectorConfPath=[%s] err=[%s]", connectorConfPath, err))
+	}
 
 	parameters := strings.Split(connectorConf.User.EngineCommandOption, " ")
 	parametersString := strings.Join(parameters, " ")
 	parametersString = strings.TrimRight(parametersString, " ")
 	g.G.Chat.Trace("...Coliseum... (^q^) EngineCommand=[%s] ArgumentList=[%s]\n", connectorConf.User.EngineCommand, parametersString)
 	cmd := exec.Command(connectorConf.User.EngineCommand, parameters...)
-	err := cmd.Start()
+	err = cmd.Start()
 	if err != nil {
 		panic(g.G.Chat.Fatal(fmt.Sprintf("...Coliseum... cmd.Run() --> [%s]", err)))
 	}
