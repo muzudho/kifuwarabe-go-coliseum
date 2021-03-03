@@ -2,11 +2,12 @@ package entities
 
 // ColiseumConf - Tomlファイル。
 type ColiseumConf struct {
-	Coliseum Coliseum
+	White Color
+	Black Color
 }
 
-// Coliseum - [Coliseum] 区画。
-type Coliseum struct {
-	WhiteWorkspace string
-	BlackWorkspace string
+// Color - [White], [Black] 区画。
+type Color struct {
+	Connector string
+	Workspace string
 }

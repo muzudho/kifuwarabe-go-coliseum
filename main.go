@@ -12,6 +12,7 @@ import (
 
 	// CoNnector
 	cnui "github.com/muzudho/gtp-engine-to-nngs/ui"
+	"github.com/muzudho/kifuwarabe-go-coliseum/entities"
 	g "github.com/muzudho/kifuwarabe-go-coliseum/global"
 	"github.com/muzudho/kifuwarabe-go-coliseum/ui"
 	kwu "github.com/muzudho/kifuwarabe-gtp/usecases"
@@ -71,8 +72,8 @@ func main() {
 	if err != nil {
 		panic(g.G.Log.Fatal(fmt.Sprintf("...Engine... coliseumConfPath=[%s] err=[%s]", coliseumConfPath, err)))
 	}
-	wdw := coliseumConfig.Coliseum.WhiteWorkspace
-	wdb := coliseumConfig.Coliseum.BlackWorkspace
+	wdw := coliseumConfig.White.Workspace
+	wdb := coliseumConfig.Black.Workspace
 	fmt.Printf("...Coliseum... WorkingDirectoryW=%s\n", wdw)
 	fmt.Printf("...Coliseum... WorkingDirectoryB=%s\n", wdb)
 	connectorConfPathW := filepath.Join(wdw, "input/connector.conf.toml")
@@ -88,23 +89,25 @@ func main() {
 	wg := sync.WaitGroup{}
 	wg.Add(2)
 	g.G.Chat.Trace("...Coliseum... Start cmdW\n")
-	go startConnector(coliseumConfig.Coliseum.WhiteWorkspace, &wg)
+	go startConnector(coliseumConfig.White, &wg)
 	g.G.Chat.Trace("...Coliseum... Sleep 4 seconds\n")
 	time.Sleep(time.Second * 4)
 	g.G.Chat.Trace("...Coliseum... Start cmdB\n")
-	go startConnector(coliseumConfig.Coliseum.BlackWorkspace, &wg)
-	g.G.Chat.Trace("...Coliseum... WaitGropu wait\n")
+	go startConnector(coliseumConfig.Black, &wg)
+
+	g.G.Chat.Trace("...Coliseum... WaitGropu.wait begin\n")
 	wg.Wait()
+	g.G.Chat.Trace("...Coliseum... WaitGropu.wait end\n")
 
 	g.G.Chat.Trace("...Coliseum... End\n")
 }
 
 // コネクターを起動
-func startConnector(coliseumWorkspace string, wg *sync.WaitGroup) {
+func startConnector(colorConf entities.Color, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	// コネクター設定ファイル読込
-	connectorConfPath := filepath.Join(coliseumWorkspace, "input/connector.conf.toml")
+	connectorConfPath := filepath.Join(colorConf.Workspace, "input/connector.conf.toml")
 	connectorConf, err := cnui.LoadConnectorConf(connectorConfPath)
 	if err != nil {
 		panic(g.G.Chat.Fatal("...Coliseum... connectorConfPath=[%s] err=[%s]", connectorConfPath, err))

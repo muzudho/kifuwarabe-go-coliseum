@@ -1,4 +1,9 @@
-[Coliseum]
+[White]
 
-WhiteWorkspace = 'C:/Users/むずでょ/go/src/github.com/muzudho/kifuwarabe-go-coliseum/workspace-w'
-BlackWorkspace = 'C:/Users/むずでょ/go/src/github.com/muzudho/kifuwarabe-go-coliseum/workspace-b'
+Connector = 'C:/Users/むずでょ/go/src/github.com/muzudho/gtp-engine-to-nngs/gtp-engine-to-nngs.exe'
+Workspace = 'C:/Users/むずでょ/go/src/github.com/muzudho/kifuwarabe-go-coliseum/workspace-w'
+
+[Black]
+
+Connector = 'C:/Users/むずでょ/go/src/github.com/muzudho/gtp-engine-to-nngs/gtp-engine-to-nngs.exe'
+Workspace = 'C:/Users/むずでょ/go/src/github.com/muzudho/kifuwarabe-go-coliseum/workspace-b'
