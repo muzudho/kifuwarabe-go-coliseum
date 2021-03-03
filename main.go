@@ -10,12 +10,10 @@ import (
 	"sync"
 	"time"
 
-	// CoNnector
-
+	l "github.com/muzudho/go-logger"
 	"github.com/muzudho/kifuwarabe-go-coliseum/entities"
 	g "github.com/muzudho/kifuwarabe-go-coliseum/global"
 	"github.com/muzudho/kifuwarabe-go-coliseum/ui"
-	kwu "github.com/muzudho/kifuwarabe-gtp/usecases"
 )
 
 func main() {
@@ -38,7 +36,7 @@ func main() {
 	fmt.Printf("...Coliseum... coliseumConfPath=%s\n", coliseumConfPath)
 
 	// ロガーの作成。
-	g.G.Log = *kwu.NewLogger(
+	g.G.Log = *l.NewLogger(
 		filepath.Join(*wd, "output/trace.log"),
 		filepath.Join(*wd, "output/debug.log"),
 		filepath.Join(*wd, "output/info.log"),
@@ -62,8 +60,8 @@ func main() {
 	g.G.Log.Trace("...Coliseum Remove all old logs\n")
 
 	// チャッターの作成。 標準出力とロガーを一緒にしただけです。
-	g.G.Chat = *kwu.NewChatter(g.G.Log)
-	g.G.StderrChat = *kwu.NewStderrChatter(g.G.Log)
+	g.G.Chat = *l.NewChatter(g.G.Log)
+	g.G.StderrChat = *l.NewStderrChatter(g.G.Log)
 
 	g.G.Chat.Trace("...Coliseum... Start\n")
 
